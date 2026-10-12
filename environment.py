@@ -241,9 +241,13 @@ class DroneEnv(VecEnv):
 
         out_of_bounds = np.any(np.abs(pos[:, 0:2]) > 5.0, axis=1)      # grid edges
         out_of_bounds |= np.any(np.abs(states[:, 10:13]) > 1000.0, axis=1)  # numeric blow-up
+        rewards[out_of_bounds] = - 10
 
-        terminated = ground_collision | out_of_bounds
-        rewards[terminated] = -10.0
+        success = pos_err <= 0.2 
+        success &= speed <= 0.1
+        rewards[success] = 20.0
+
+        terminated = ground_collision | out_of_bounds | success
         return rewards, terminated
 
     # ----------------------------------------------------------------------
